@@ -37,7 +37,7 @@ class _GroceryListState extends State<GroceryList> {
     for (final item in listData.entries) {
       final category = categories.entries
           .firstWhere((categoryItem) =>
-              categoryItem.value.title == item.value['category'])
+      categoryItem.value.title == item.value['category'])
           .value;
       loadItems.add(GroceryItem(
           id: item.key,
@@ -61,9 +61,26 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _deleteItem(GroceryItem item) {
-    _groceryItems.remove(item);
+  void _deleteItem(GroceryItem item) async {
+    final index = _groceryItems.indexOf(item);
+    final url = Uri.https(
+        'flutter-prep-4c5fe-default-rtdb.firebaseio.com', 'shopping_list/${item.id}.json');
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+      showDeleteItemSnackBar();
+    }
   }
+
+  void showDeleteItemSnackBar() {
+    const snackBar = SnackBar(
+      content: Text('Failed to delete item, please try again later.'),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
 
   @override
   Widget build(BuildContext context) {
